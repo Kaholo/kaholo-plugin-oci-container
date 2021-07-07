@@ -1,0 +1,290 @@
+{
+    "name": "OCI-Container-Engine",
+    "type": "executer",
+    "execProgram": "node",
+    "main": "app.js",
+    "exposeRoute": true,
+    "imgUrl": "logo.png",
+    "version": "1.0.0",
+    "description": "Integration with Oracle Cloud(OCI) Container Engine Service(OKE)",
+    "settings": [
+        {
+            "name":"privateKey",
+            "viewName":"Private key",
+            "type":"vault"
+        },
+        {
+            "name":"userId",
+            "viewName":"User Id",
+            "type":"string"
+        },
+        {
+            "name":"tenancyId",
+            "viewName":"Tenancy Id",
+            "type":"string"
+        },
+        {
+            "name":"fingerprint",
+            "viewName":"Fingerprint",
+            "type":"vault"
+        },
+        {
+            "name":"region",
+            "viewName":"Region",
+            "type":"string"
+        }
+    ],
+    "methods":[
+        {
+            "name":"createCluster",
+            "viewName":"Create Cluster",
+            "params": [
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "name",
+                    "viewName": "Cluster Name",
+                    "type": "string"
+                },
+                {
+                    "name": "kubernetesVersion",
+                    "viewName": "Kubernetes Version",
+                    "type": "options",
+                    "options": [
+                        {
+                            "id": "1.19.7",
+                            "name": "1.19.7"
+                        },
+                        {
+                            "id": "1.18.10",
+                            "name": "1.18.10"
+                        },
+                        {
+                            "id": "1.17.13",
+                            "name": "1.17.13"
+                        }
+                    ]
+                },
+                {
+                    "name": "vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                },
+                {
+                    "name": "subnet",
+                    "viewName": "Subnet",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listSubnets"
+                },
+                {
+                    "name": "nsg",
+                    "viewName": "Network Security Groups",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listNSGs"
+                },
+                {
+                    "name": "publicIp",
+                    "viewName": "Assign Public IP",
+                    "type": "boolean"
+                },
+                {
+                    "name": "lbSubnetIds",
+                    "viewName": "Subnet IDs For K8s Load Balancers",
+                    "type": "text"
+                },
+                {
+                    "name": "podsCidr",
+                    "viewName": "Pods CIDR Block",
+                    "type": "string"
+                },
+                {
+                    "name": "servicesCidr",
+                    "viewName": "Services CIDR Block",
+                    "type": "string"
+                },
+                {
+                    "name": "shape",
+                    "viewName": "Node Shape",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listShapes"
+                },
+                {
+                    "name": "image",
+                    "viewName": "Node Image",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listImages"
+                },
+                {
+                    "name": "nodesCount",
+                    "viewName": "Number Of Nodes",
+                    "type": "boolean"
+                },
+                {
+                    "name": "availabilityDomains",
+                    "viewName": "Availability Domains",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listAvailabilityDomains"
+                },
+                {
+                    "name": "subnets",
+                    "viewName": "Node Pool Subnets",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listSubnetsForNodePools"
+                }
+            ]
+        },
+        {
+            "name":"createNodePool",
+            "viewName":"Create Node Pool",
+            "params": [
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "vcn",
+                    "viewName": "VCN",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listVCN"
+                },
+                {
+                    "name": "cluster",
+                    "viewName": "Cluster",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listClusters"
+                },
+                {
+                    "name": "name",
+                    "viewName": "Node Pool Name",
+                    "type": "string"
+                },
+                {
+                    "name": "kubernetesVersion",
+                    "viewName": "Kubernetes Version",
+                    "type": "options",
+                    "options": [
+                        {
+                            "id": "1.19.7",
+                            "name": "1.19.7"
+                        },
+                        {
+                            "id": "1.18.10",
+                            "name": "1.18.10"
+                        },
+                        {
+                            "id": "1.17.13",
+                            "name": "1.17.13"
+                        }
+                    ]
+                },
+                {
+                    "name": "shape",
+                    "viewName": "Node Shape",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listShapes"
+                },
+                {
+                    "name": "ocpuCount",
+                    "viewName": "Custom Shape OCPUs Count",
+                    "type": "string"
+                },
+                {
+                    "name": "memSize",
+                    "viewName": "Custom Shape Memory Size(GBs)",
+                    "type": "string"
+                },
+                {
+                    "name": "image",
+                    "viewName": "Node Image",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listImages"
+                },
+                {
+                    "name": "nodeCount",
+                    "viewName": "Number Of Nodes",
+                    "type": "boolean"
+                },
+                {
+                    "name": "nsg",
+                    "viewName": "Network Security Groups",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listNSGs"
+                },
+                {
+                    "name": "availabilityDomains",
+                    "viewName": "Availability Domains",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listAvailabilityDomains"
+                },
+                {
+                    "name": "subnets",
+                    "viewName": "Subnets",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listSubnetsForNodePools"
+                }
+            ]
+        },
+        {
+            "name":"createClusterKubeConfig",
+            "viewName":"Create Cluster KubeConfig",
+            "params": [
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "cluster",
+                    "viewName": "Cluster",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listClusters"
+                },
+                {
+                    "name": "endpointType",
+                    "viewName": "Endpoint Type",
+                    "type": "options",
+                    "options": [
+                        {
+                            "id": "LEGACY_KUBERNETES",
+                            "name": "Legacy Kubernetes"
+                        },
+                        {
+                            "id": "PUBLIC_ENDPOINT",
+                            "name": "Public"
+                        },
+                        {
+                            "id": "PRIVATE_ENDPOINT",
+                            "name": "Private"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
