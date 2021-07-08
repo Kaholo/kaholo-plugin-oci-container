@@ -131,12 +131,13 @@ async function listSubnetsForNodePools(query, pluginSettings, pluginActionParams
    */
   const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
   const compartmentId = params.compartment || settings.tenancyId;
-  if (!compartmentId || !params.availabilityDomains) throw "Must provide compartment and an availability domain";
   const virtualNetworkClient = getVirtualNetworkClient(settings);
   const result = await virtualNetworkClient.listSubnets({
     compartmentId
   });
-  result.items = result.items.filter(subnet => subnet.availabilityDomain === params.availabilityDomains);
+  if (params.availabilityDomains){
+    result.items = result.items.filter(subnet => subnet.availabilityDomain === params.availabilityDomains);
+  }
   return handleResult(result, query);
 }
 
