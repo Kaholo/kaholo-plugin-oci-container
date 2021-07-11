@@ -1,4 +1,5 @@
 const common = require("oci-common");
+const identity = require("oci-identity");
 const containerEngine = require("oci-containerengine");
 const core = require("oci-core");
 const parsers = require("./parsers");
@@ -48,6 +49,13 @@ function parseMultiAutoComplete(param){
   param = parsers.autocomplete(param);
   if (param && !Array.isArray(param)) return [param];
   return param;
+}
+
+async function getDefaultAvailabilityDomain(settings){
+  const identityClient = await new identity.IdentityClient({
+    authenticationDetailsProvider: getProvider(settings)
+  });
+  return (await identityClient.listAvailabilityDomains({compartmentId: settings.tenancyId})).items[0].name;
 }
   
 async function createOKENetwork(action, settings){
@@ -311,5 +319,6 @@ module.exports = {
     parseMultiAutoComplete,
     getComputeClient,
     getVirtualNetworkClient,
-    createOKENetwork
+    createOKENetwork,
+    getDefaultAvailabilityDomain
 }

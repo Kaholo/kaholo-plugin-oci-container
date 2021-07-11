@@ -44,8 +44,11 @@ async function listCompartments(query, pluginSettings) {
   const identityClient = await new identity.IdentityClient({
     authenticationDetailsProvider: provider
   });
-  const request = { compartmentId: tenancyId };
-  const result = await identityClient.listCompartments(request);
+  const result = await identityClient.listCompartments({
+    compartmentId: tenancyId,
+    compartmentIdInSubtree: true,
+    accessLevel: "ACCESSIBLE"
+  });
   const compartments = handleResult(result, query);
   compartments.push({id: tenancyId, value: "Tenancy"});
   return compartments;
@@ -132,12 +135,15 @@ async function listSubnetsForNodePools(query, pluginSettings, pluginActionParams
   const settings = mapAutoParams(pluginSettings), params = mapAutoParams(pluginActionParams);
   const compartmentId = params.compartment || settings.tenancyId;
   const virtualNetworkClient = getVirtualNetworkClient(settings);
-  const result = await virtualNetworkClient.listSubnets({
-    compartmentId
-  });
-  if (params.availabilityDomains){
-    result.items = result.items.filter(subnet => subnet.availabilityDomain === params.availabilityDomains);
+  if (!params.vcn){
+    const containerClient = getContainerEngineClient(settings);
+    params.vcn = (await containerClient.getCluster({clusterId: params.cluster})).cluster.vcnId;
   }
+  const result = await virtualNetworkClient.listSubnets({
+    compartmentId,
+    vcnId: params.vcn,
+  });
+  result.items = result.items.filter(subnet => !subnet.availabilityDomain || subnet.availabilityDomain === params.availabilityDomains);
   return handleResult(result, query);
 }
 

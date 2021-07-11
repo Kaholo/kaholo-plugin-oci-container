@@ -1,4 +1,4 @@
-const { getContainerEngineClient, createOKENetwork, parseMultiAutoComplete } = require('./helpers');
+const { getContainerEngineClient, createOKENetwork, parseMultiAutoComplete, getDefaultAvailabilityDomain } = require('./helpers');
 const parsers = require("./parsers");
 
 async function createNodePool(action, settings) {
@@ -6,8 +6,11 @@ async function createNodePool(action, settings) {
   const nsgIds = parseMultiAutoComplete(action.params.nsg);
   const availabilityDomains = parseMultiAutoComplete(action.params.availabilityDomains);
   const subnets = parseMultiAutoComplete(action.params.subnets);
-  if (!subnets || subnets.length == 0) {
-    throw "Must provide at least one node subnet";
+  if (!subnets || subnets.length == 0 || !availabilityDomains || availabilityDomains.length === 0) {
+    throw "Must provide at least one node subnet and availability domain for placment config!";
+  }
+  if (availabilityDomains.length !== subnets.length){
+    throw "Node Pool subnets and availability Fomains must be the same size!"
   }
   
   return client.createNodePool({ createNodePoolDetails: {
@@ -21,7 +24,7 @@ async function createNodePool(action, settings) {
       size: parsers.number(action.params.nodeCount),
       nsgIds: nsgIds,
       placementConfigs: subnets.map((subnetId, index) => ({
-        availabilityDomain: availabilityDomains && availabilityDomains.length >= index ? undefined : availabilityDomains[index],
+        availabilityDomain: availabilityDomains[index],
         subnetId: subnetId
       }))
     },
@@ -86,10 +89,15 @@ async function quickCreateCluster(action, settings) {
   action.params.podsCidr = "10.244.0.0/16",
   action.params.servicesCidr = "10.96.0.0/16",
   action.params.image = "Oracle-Linux-7.9-2021.06.20-0",
-  action.params.nodeCount = 3;
+  action.params.availabilityDomains = getDefaultAvailabilityDomain(settings);
   action.params.subnets = network.nodeSubnet.id;
-  const result = await createCluster(action, settings);
-  return {network, ...result};
+  try {
+    const result = await createCluster(action, settings);
+    return {network, ...result};
+  } 
+  catch (error){
+    throw {createdVCN: network, error}
+  }
 }
 
 module.exports = {
