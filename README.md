@@ -57,7 +57,7 @@ Creates a network to host the cluster in, a new cluster, and a node pool.
 6. Node Shape (Autocomplete) **Required** - The Shape to use for nodes in the node pool.
 7. Number Of Nodes (Integer) **Required** - The maximum number of nodes in the node pool.
 
-## Method Quick Cluster KubeConfig
+## Method Create Cluster KubeConfig
 Creates a kubeconfig for the specified cluster.
 
 ### Parameters
