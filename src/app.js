@@ -1,4 +1,4 @@
-const { getContainerEngineClient, createOKENetwork, parseMultiAutoComplete, getDefaultAvailabilityDomain, getVirtualNetworkClient } = require('./helpers');
+const { getContainerEngineClient, createOKENetwork, parseMultiAutoComplete, getDefaultAvailabilityDomain, getDefaultImage, getVirtualNetworkClient } = require('./helpers');
 const parsers = require("./parsers");
 
 async function createNodePool(action, settings) {
@@ -88,7 +88,7 @@ async function quickCreateCluster(action, settings) {
   action.params.lbSubnetIds = network.lbSubnet.id;
   action.params.podsCidr = "10.244.0.0/16",
   action.params.servicesCidr = "10.96.0.0/16",
-  action.params.image = "Oracle-Linux-7.9-2021.06.20-0",
+  action.params.image = getDefaultImage(settings);
   action.params.availabilityDomains = getDefaultAvailabilityDomain(settings);
   action.params.subnets = network.nodeSubnet.id;
   try {
@@ -109,4 +109,3 @@ module.exports = {
   quickCreateCluster,
   ...require("./autocomplete")
 }
-

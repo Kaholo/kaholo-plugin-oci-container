@@ -51,6 +51,11 @@ function parseMultiAutoComplete(param){
   return param;
 }
 
+async function getDefaultImage(settings){
+  const computeClient = getComputeClient(settings);
+  return (await computeClient.listImages({compartmentId, displayName: "Oracle-Linux-7.9-2021.06.20-0"})).items[0].id;
+}
+  
 async function getDefaultAvailabilityDomain(settings){
   const identityClient = await new identity.IdentityClient({
     authenticationDetailsProvider: getProvider(settings)
@@ -320,5 +325,6 @@ module.exports = {
     getComputeClient,
     getVirtualNetworkClient,
     createOKENetwork,
-    getDefaultAvailabilityDomain
+    getDefaultAvailabilityDomain,
+    getDefaultImage
 }
