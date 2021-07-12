@@ -1,4 +1,4 @@
-const { getContainerEngineClient, createOKENetwork, parseMultiAutoComplete, getDefaultAvailabilityDomain } = require('./helpers');
+const { getContainerEngineClient, createOKENetwork, parseMultiAutoComplete, getDefaultAvailabilityDomain, getVirtualNetworkClient } = require('./helpers');
 const parsers = require("./parsers");
 
 async function createNodePool(action, settings) {
@@ -96,7 +96,9 @@ async function quickCreateCluster(action, settings) {
     return {network, ...result};
   } 
   catch (error){
-    throw {createdVCN: network, error}
+    const client = getVirtualNetworkClient(settings);
+    await client.deleteVcn(network.vcn.id);
+    throw error;
   }
 }
 
