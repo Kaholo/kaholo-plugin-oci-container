@@ -12,7 +12,7 @@ Kaholo plugin for integration with Oracle Cloud Infrastructure(OCI) Container En
 Creates a new node pool inside the specified cluster.
 
 ### Parameters
-1. Compartment (Autocomplete) **Required** - The ID of the compartment to create the new repository in.
+1. Compartment (Autocomplete) **Optional** - The OCID of the compartment to create the new repository in. If not specified, will use the tenancy.
 2. VCN (Autocomplete) **Optional** - The VCN of the cluster to create the node pool for.
 3. Cluster (Autocomplete) **Required** - The Cluster to add the node pool to.
 4. Node Pool Name (String) **Required** - The name of the node pool. Must be lowercase and not conatin spaces or special chars.
@@ -29,7 +29,7 @@ Creates a new node pool inside the specified cluster.
 Creates a new kubernetes cluster, and possibly a node pool for it.
 
 ### Parameters
-1. Compartment (Autocomplete) **Required** - The ID of the compartment to create the new cluster in.
+1. Compartment (Autocomplete) **Optional** - The OCID of the compartment to create the new cluster in. If not specified, will use the tenancy.
 2. Cluster Name (String) **Required** - The name to give to the new cluster. Can only be composed of lowercase letters and number.
 3. Kubernetes Version (Options) **Optional** - The version of kubernetes to run on this cluster. Possible values are: v1.19.7/v1.18.10/v1.17.13/v1.17.7. Default value is v1.19.7.
 4. VCN (Autocomplete) **Required** - The VCN of the subnet to create the cluster in.
@@ -49,7 +49,7 @@ Creates a new kubernetes cluster, and possibly a node pool for it.
 Creates a network to host the cluster in, a new cluster, and a node pool.
 
 ### Parameters
-1. Compartment (Autocomplete) **Required** - The ID of the compartment to create the new cluster in.
+1. Compartment (Autocomplete) **Optional** - The OCID of the compartment to create the new cluster in. If not specified, will use the tenancy.
 2. Cluster Name (String) **Required** - The name to give to the new cluster. Can only be composed of lowercase letters and number.
 3. Kubernetes Version (Options) **Optional** - The version of kubernetes to run on this cluster. Possible values are: v1.19.7/v1.18.10/v1.17.13/v1.17.7. Default value is v1.19.7.
 4. Public Endpoint (Boolean) **Optional** - If true make the endpoint public. Else make it private. Default is false.
@@ -61,6 +61,16 @@ Creates a network to host the cluster in, a new cluster, and a node pool.
 Creates a kubeconfig for the specified cluster.
 
 ### Parameters
-1. Compartment (Autocomplete) **Required** - The ID of the compartment of the cluster.
+1. Compartment (Autocomplete) **Required** - The OCID of the compartment of the cluster. If not specified, will use the tenancy.
 2. Cluster (Autocomplete) **Required** - The cluster to get it's KubeConfig.
 3. Endpoint Type (Options) **Required** - The type of endpoint to connect to in the kube config
+
+## Method Get Cluster
+Get back information about a cluster by it's name or id.
+
+### Parameters
+1. Compartment (Autocomplete) **Optional** - The OCID of the compartment of the required cluster.
+2. Cluster (Autocomplete) **Optional** - The OCID of the required cluster.
+3. Cluster Name (String) **Optional** - The Name of the required cluster.
+
+* Must provide cluster from autocomplete(ID) or cluster name.
