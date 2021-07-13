@@ -51,7 +51,7 @@ function parseMultiAutoComplete(param){
   return param;
 }
 
-async function getDefaultImage(settings){
+async function getDefaultImage(settings, compartmentId){
   const computeClient = getComputeClient(settings);
   return (await computeClient.listImages({compartmentId, displayName: "Oracle-Linux-7.9-2021.06.20-0"})).items[0].id;
 }
@@ -68,7 +68,7 @@ async function createOKENetwork(action, settings){
   
   const name = parsers.string(action.params.name);
   const randId = Date.now().toString(36);
-  const quickName = `quick-${name.substring(0, 6)}-${randId}`;
+  const quickName = `quick-${name.substring(0, 8)}-${randId}`;
   const compartmentId = parsers.autocomplete(action.params.compartment) || settings.tenancyId;
   const defServiceCidr = "all-ams-services-in-oracle-services-network";
   const defServiceId = (await netClient.listServices({})).items.filter(service => service.cidrBlock === defServiceCidr)[0].id;

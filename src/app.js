@@ -1,5 +1,6 @@
 const { getContainerEngineClient, createOKENetwork, parseMultiAutoComplete, getDefaultAvailabilityDomain, getDefaultImage, getVirtualNetworkClient } = require('./helpers');
 const parsers = require("./parsers");
+const fs = require("fs");
 
 async function createNodePool(action, settings) {
   const client = getContainerEngineClient(settings);
@@ -12,10 +13,11 @@ async function createNodePool(action, settings) {
   if (availabilityDomains.length !== subnets.length){
     throw "Node Pool subnets and availability Fomains must be the same size!"
   }
-  
-  return client.createNodePool({ createNodePoolDetails: {
-    compartmentId: parsers.autocomplete(action.params.compartment) || settings.tenancyId,
-    name: parsers.string(action.params.name),
+  const compartmentId = parsers.autocomplete(action.params.compartment) || settings.tenancyId;
+  const nodeName = parsers.string(action.params.name);
+  await client.createNodePool({ createNodePoolDetails: {
+    compartmentId,
+    name: nodeName,
     clusterId: parsers.autocomplete(action.params.cluster),
     kubernetesVersion: action.params.kubernetesVersion || "1.19.7",
     nodeShape: parsers.autocomplete(action.params.shape),
@@ -33,13 +35,16 @@ async function createNodePool(action, settings) {
       ocpus: parsers.number(action.params.ocpuCount)
     }
   }});
+  return {nodePool: (await client.listNodePools({compartmentId, name: nodeName})).items[0]};
 }
 
 async function createCluster(action, settings) {
   const client = getContainerEngineClient(settings);
-  const result = {createCluster: await client.createCluster({ createClusterDetails: {
-    compartmentId: parsers.autocomplete(action.params.compartment) || settings.tenancyId,
-    name: parsers.string(action.params.name),
+  const compartmentId = parsers.autocomplete(action.params.compartment) || settings.tenancyId;
+  const clusterName = parsers.string(action.params.name);
+  await client.createCluster({ createClusterDetails: {
+    compartmentId,
+    name: clusterName,
     kubernetesVersion: action.params.kubernetesVersion || "v1.19.7",
     vcnId: parsers.autocomplete(action.params.vcn),
     endpointConfig: {
@@ -54,42 +59,60 @@ async function createCluster(action, settings) {
         servicesCidr: parsers.string(action.params.servicesCidr)
       }
     }
-  }})};
-  try {
-    if (action.params.shape){ // if specified shape then need to create node pool
+  }})
+  const result = {createCluster: await getCluster(action, settings)};
+  if (action.params.shape){ // if specified shape then need to create node pool
+    try {
       action.params.name = action.params.name + "_nodepool";
       // get cluster id
-      action.params.cluster = (await client.getWorkRequest({workRequestId: result.createCluster.opcWorkRequestId})).workRequest.resources[0].identifier;
+      action.params.cluster = result.createCluster.cluster.id;
       result.createNodePool = await createNodePool(action, settings);
     }
+    catch (error){
+      throw {...result, error};
+    }
   }
-  catch (error){
-    throw {...result, error};
+  if (action.params.waitFor){
+    const waiters = client.createWaiters();
+    result.createCluster = await waiters.forCluster({clusterId: result.createCluster.cluster.id}, "ACTIVE");
   }
   return result;
 }
 
 async function createClusterKubeConfig(action, settings) {
   const client = getContainerEngineClient(settings);
-  return client.createKubeconfig({ 
+  const savePath = parsers.string(action.params.savePath);
+  const writeStream = fs.createWriteStream(savePath);
+  const kubeFileStream = (await client.createKubeconfig({ 
     clusterId: parsers.autocomplete(action.params.cluster),
     createClusterKubeconfigContentDetails: {
       endpoint: action.params.endpointType,
       tokenVersion: "2.0.0"
     }
+  })).value;
+  const streamPromise = new Promise(fulfill => {
+    kubeFileStream.on('data', function(d){ 
+      writeStream.write(d);
+    });
+    kubeFileStream.on('end', function(){
+      writeStream.close();
+      fulfill();
+    });
   });
+  await streamPromise;
+  return `KubeConfig file created at ${savePath}`;
 }
 
 async function quickCreateCluster(action, settings) {
   const network = await createOKENetwork(action, settings);
   action.params.vcn = network.vcn.id;
   action.params.subnet = network.endpointSubnet.id;
-  action.params.publicIp = action.params.publicWorkers;
+  action.params.publicIp = action.params.publicEndpoint;
   action.params.lbSubnetIds = network.lbSubnet.id;
   action.params.podsCidr = "10.244.0.0/16",
   action.params.servicesCidr = "10.96.0.0/16",
-  action.params.image = getDefaultImage(settings);
-  action.params.availabilityDomains = getDefaultAvailabilityDomain(settings);
+  action.params.image = await getDefaultImage(settings, parsers.autocomplete(action.params.compartment) || settings.tenancyId);
+  action.params.availabilityDomains = await getDefaultAvailabilityDomain(settings);
   action.params.subnets = network.nodeSubnet.id;
   try {
     const result = await createCluster(action, settings);
@@ -97,9 +120,24 @@ async function quickCreateCluster(action, settings) {
   } 
   catch (error){
     const client = getVirtualNetworkClient(settings);
-    await client.deleteVcn(network.vcn.id);
+    await client.deleteVcn({vcnId: network.vcn.id});
     throw error;
   }
+}
+
+async function getCluster(action, settings) {
+  const client = getContainerEngineClient(settings);
+  if (action.params.name){
+    const clusters = (await client.listClusters({
+      compartmentId: parsers.autocomplete(action.params.compartment) || settings.tenancyId,
+      name: parsers.string(action.params.name)
+    })).items;
+    if (clusters.length === 0){
+      throw "Can't find the cluster";
+    } 
+    return {cluster: clusters[0]};
+  }
+  return client.getCluster({clusterId: parsers.autocomplete(action.params.cluster)});
 }
 
 module.exports = {
@@ -107,5 +145,6 @@ module.exports = {
   createCluster,
   createClusterKubeConfig,
   quickCreateCluster,
+  getCluster,
   ...require("./autocomplete")
 }

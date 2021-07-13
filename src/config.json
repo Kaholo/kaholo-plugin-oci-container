@@ -147,6 +147,11 @@
                     "type": "autocomplete",
                     "autocompleteType":"function",
                     "functionName":"listSubnetsForNodePools"
+                },
+                {
+                    "name": "waitFor",
+                    "viewName": "Wait For Creation",
+                    "type": "boolean"
                 }
             ]
         },
@@ -280,17 +285,22 @@
                     "options": [
                         {
                             "id": "LEGACY_KUBERNETES",
-                            "name": "Legacy Kubernetes"
+                            "name": "LEGACY_KUBERNETES"
                         },
                         {
                             "id": "PUBLIC_ENDPOINT",
-                            "name": "Public"
+                            "name": "PUBLIC_ENDPOINT"
                         },
                         {
                             "id": "PRIVATE_ENDPOINT",
-                            "name": "Private"
+                            "name": "PRIVATE_ENDPOINT"
                         }
                     ]
+                },
+                {
+                    "name": "savePath",
+                    "viewName": "Save Path",
+                    "type": "string"
                 }
             ]
         },
@@ -353,6 +363,36 @@
                 {
                     "name": "nodeCount",
                     "viewName": "Number Of Nodes",
+                    "type": "string"
+                },
+                {
+                    "name": "waitFor",
+                    "viewName": "Wait For Creation",
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name":"getCluster",
+            "viewName":"Get Cluster",
+            "params": [
+                {
+                    "name": "compartment",
+                    "viewName": "Compartment",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listCompartments"
+                },
+                {
+                    "name": "cluster",
+                    "viewName": "Cluster",
+                    "type": "autocomplete",
+                    "autocompleteType":"function",
+                    "functionName":"listClusters"
+                },
+                {
+                    "name": "name",
+                    "viewName": "Cluster Name",
                     "type": "string"
                 }
             ]
